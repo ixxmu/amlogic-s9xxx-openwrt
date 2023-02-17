@@ -25,7 +25,10 @@ on:
         description: "Set the docker image"
         required: false
         default: "jjliu/openwrt-aarch64:latest"
-
+      repo_define:
+        description: "设置你要下载armvirt-64-default-rootfs.tar.gz仓库地址"
+        required: false
+        default: "ophub/amlogic-s9xxx-openwrt"
 env:
   DOCKER_OUTPATH: out
 
@@ -43,10 +46,10 @@ jobs:
         if: (!cancelled())
         run: |
           # Get OpenWrt file
-          openwrt_url="$(curl --header "authorization: Bearer ${{ secrets.GH_TOKEN }}" -s "https://api.github.com/repos/ophub/amlogic-s9xxx-openwrt/releases" | grep -o "OpenWrt_.*${{ inputs.branch }}.*/.*rootfs.tar.gz" | head -n 1)"
+          openwrt_url="$(curl --header "authorization: Bearer ${{ secrets.GH_TOKEN }}" -s "https://api.github.com/repos/${repo_define}/releases" | grep -o "OpenWrt_.*${{ inputs.branch }}.*/.*rootfs.tar.gz" | head -n 1)"
           [[ -z "${openwrt_url}" ]] && echo -e "OpenWrt file not found!" && exit 1
           rm -rf ${{ env.DOCKER_OUTPATH }} 2>/dev/null && mkdir -p ${{ env.DOCKER_OUTPATH }}
-          wget -q "https://github.com/ophub/amlogic-s9xxx-openwrt/releases/download/${openwrt_url}" -O "${{ env.DOCKER_OUTPATH }}/openwrt-armvirt-64-default-rootfs.tar.gz"
+          wget -q "https://github.com/${repo_define}/releases/download/${openwrt_url}" -O "${{ env.DOCKER_OUTPATH }}/openwrt-armvirt-64-default-rootfs.tar.gz"
           #
           # Generate Dockerfile
           docker_envfile="${{ env.DOCKER_OUTPATH }}/Dockerfile"
